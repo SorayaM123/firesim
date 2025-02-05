@@ -1,0 +1,17 @@
+{
+	"benchmark_name": "spec17-intspeed-test-623xalancbmk_s",
+	"common_simulation_outputs": [
+		"uartlog"
+	],
+	"post_run_hook": "../../../spec-cpu2017/spec2017-workload/handle-results.py -d test -s intspeed",
+	"workloads": [
+		{
+			"name": "spec17-intspeed-test-623xalancbmk_s-623.xalancbmk_s",
+			"bootbinary": "../../../target-design/chipyard/software/firemarshal/images/firechip/spec17-intspeed-test-623xalancbmk_s-623.xalancbmk_s/spec17-intspeed-test-623xalancbmk_s-623.xalancbmk_s-bin",
+			"rootfs": "../../../target-design/chipyard/software/firemarshal/images/firechip/spec17-intspeed-test-623xalancbmk_s-623.xalancbmk_s/spec17-intspeed-test-623xalancbmk_s-623.xalancbmk_s.img",
+			"outputs": [
+				"/output"
+			]
+		}
+	]
+}

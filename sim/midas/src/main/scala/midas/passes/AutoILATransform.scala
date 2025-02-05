@@ -260,7 +260,9 @@ object AutoILATransform extends Transform with DependencyAPIMigration {
 
     val newState = if (!p(EnableAutoILA)) {
       ilaLog("p(EnableAutoILA) unset. Skipping AutoILATransform")
+      // ilaLog(s"dataDepth = $dataDepth")
       state
+     // runTransform(state, ilaAnnos, dataDepth, probeTriggers)
     } else if (ilaAnnos.isEmpty) {
       ilaLog("No FPGADebug annotations found. Skipping AutoILATransform")
       state

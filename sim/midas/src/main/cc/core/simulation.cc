@@ -90,19 +90,71 @@ void simulation_t::print_simulation_performance_summary() {
   // DN: Use an optional or pointer to check if it exists
   if (auto *justl2_ptr = registry.get_widget_opt<justl2_t>()) {  // Check if the pointer is not null
       //auto &justl2 = *justl2_ptr;  // Dereference the pointer to use the object
-      int l2_accesses = justl2_ptr->read_l2_accesses();
-      int l2_misses = justl2_ptr->read_l2_misses();
+      // uint32_t l2_accesses = justl2_ptr->read_l2_accesses();
+      // uint32_t l2_misses = justl2_ptr->read_l2_misses();
+
+     //SM: Read L2 accesses (low and high) and combine into a 64-bit unsigned value
+      // uint64_t l2_accesses = ((uint64_t)l2_accesses_high << 32) | l2_accesses_low;
+      uint64_t l2_accesses_low = justl2_ptr->read_l2_accesses_low();
+      uint64_t l2_accesses_high = justl2_ptr->read_l2_accesses_high();
+      uint64_t l2_accesses = (l2_accesses_high << 32) | (l2_accesses_low & 0xFFFFFFFF);
+      uint64_t l2_accesses_load = justl2_ptr->read_l2_accesses_load();
+      uint64_t l2_accesses_writeback = justl2_ptr->read_l2_accesses_writeback();
+      uint64_t optgen_accesses= justl2_ptr->read_optgen_accesses();
+
+      // uint64_t l2_misses = ((uint64_t)l2_misses_high << 32) | l2_misses_low;
+      uint64_t l2_misses_low = justl2_ptr->read_l2_misses_low();
+      uint64_t l2_misses_high = justl2_ptr->read_l2_misses_high();
+      uint64_t l2_misses = (l2_misses_high << 32) | (l2_misses_low & 0xFFFFFFFF);
+      uint64_t l2_misses_load = justl2_ptr->read_l2_misses_load();
+      uint64_t l2_misses_writeback = justl2_ptr->read_l2_misses_writeback();
+      uint64_t optgen_hit = justl2_ptr->read_optgen_hit();
       
+
+
+
+
+      //SM
       // Check for division by zero
       if (l2_accesses != 0) {
           fprintf(stderr,
-                  "DN: L2 accesses: %d, L2 misses: %d, Miss rate: %f \n",
-                  l2_accesses, l2_misses, (float)l2_misses / l2_accesses);
+                  "L2 accesses: %" PRIu64 ", L2 misses: %" PRIu64 ", Miss rate: %f \n",
+                  l2_accesses, l2_misses, (double)l2_misses / l2_accesses);
       } else {
-          fprintf(stderr, "DN: L2 accesses: %d, L2 misses: %d, L2 Miss rate: undefined (division by zero)\n",
+          fprintf(stderr, "L2 accesses: %" PRIu64 ", L2 misses: %" PRIu64 ", L2 Miss rate: undefined (division by zero)\n",
                   l2_accesses, l2_misses);
       }
-  }
+
+      // Check for division by zero
+      if (l2_accesses_load != 0) {
+          fprintf(stderr,
+                  "l2_accesses_load: %" PRIu64 ", l2_misses_load: %" PRIu64 ", Load Miss rate: %f \n",
+                  l2_accesses_load, l2_misses_load, (double)l2_misses_load / l2_accesses_load);
+      } else {
+          fprintf(stderr, "l2_accesses_load: %" PRIu64 ", l2_misses_load: %" PRIu64 ", L2 load Miss rate: undefined (division by zero)\n",
+                  l2_accesses_load, l2_misses_load);
+      }
+
+      if (l2_accesses_writeback != 0) {
+          fprintf(stderr,
+                  "l2_accesses_writeback: %" PRIu64 ", l2_misses_writeback: %" PRIu64 ", writeback Miss rate: %f \n",
+                  l2_accesses_writeback, l2_misses_writeback, (double)l2_misses_writeback / l2_accesses_writeback);
+      } else {
+          fprintf(stderr, "l2_accesses_writeback: %" PRIu64 ", l2_misses_writeback: %" PRIu64 ", L2 writeback Miss rate: undefined (division by zero)\n",
+                  l2_accesses_writeback, l2_misses_writeback);
+      }
+
+      if (optgen_accesses != 0) {
+          fprintf(stderr,
+                  "optgen_accesses: %" PRIu64 ", optgen_hit: %" PRIu64 ", optgen hit rate: %f \n",
+                  optgen_accesses, optgen_hit, (double)optgen_hit / optgen_accesses);
+
+      } else {
+          fprintf(stderr, "optgen_accesses: %" PRIu64 ", optgen_hit: %" PRIu64 ", optgen hit rate: undefined (division by zero)\n",
+                  optgen_accesses, optgen_hit);
+      }
+
+        }
 }
 
 void simulation_t::simulation_init() {

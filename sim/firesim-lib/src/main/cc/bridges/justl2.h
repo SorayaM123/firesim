@@ -21,8 +21,18 @@
  * the target configuration.
  */
 struct JUSTL2BRIDGEMODULE_struct {
-  uint64_t l2_misses;
-  uint64_t l2_accesses;
+  // uint32_t l2_misses;
+  // uint32_t l2_accesses;
+  uint64_t l2_misses_low;    // Lower 32 bits of L2 misses
+  uint64_t l2_misses_high;   // Upper 32 bits of L2 misses
+  uint64_t l2_accesses_low;  // Lower 32 bits of L2 accesses
+  uint64_t l2_accesses_high; // Upper 32 bits of L2 accesses
+  uint64_t l2_misses_load;    
+  uint64_t l2_misses_writeback;   
+  uint64_t l2_accesses_load;  
+  uint64_t l2_accesses_writeback; 
+  uint64_t optgen_accesses;  
+  uint64_t optgen_hit; 
   uint64_t out_bits;
   uint64_t out_valid;
   uint64_t out_ready;
@@ -65,10 +75,21 @@ private:
 
   void send();
   void recv();
+  uint64_t read_register(uint32_t addr);
 
 public:
-  int read_l2_accesses();
-  int read_l2_misses();  
+  // uint32_t read_l2_accesses();
+  // uint32_t read_l2_misses();  
+  uint64_t read_l2_accesses_low();
+  uint64_t read_l2_accesses_high();
+  uint64_t read_l2_misses_low();
+  uint64_t read_l2_misses_high();
+  uint64_t read_l2_misses_load();    
+  uint64_t read_l2_misses_writeback();   
+  uint64_t read_l2_accesses_load();  
+  uint64_t read_l2_accesses_writeback(); 
+  uint64_t read_optgen_accesses();  
+  uint64_t read_optgen_hit(); 
 };
 
 #endif // __UART_H

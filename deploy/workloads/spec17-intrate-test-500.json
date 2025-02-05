@@ -1,0 +1,17 @@
+{
+	"benchmark_name": "spec17-intrate-test-500",
+	"common_simulation_outputs": [
+		"uartlog"
+	],
+	"post_run_hook": "../../../spec-cpu2017/spec2017-workload/handle-results.py -d test -s intrate",
+	"workloads": [
+		{
+			"name": "spec17-intrate-test-500-500.perlbench_r",
+			"bootbinary": "../../../target-design/chipyard/software/firemarshal/images/firechip/spec17-intrate-test-500-500.perlbench_r/spec17-intrate-test-500-500.perlbench_r-bin",
+			"rootfs": "../../../target-design/chipyard/software/firemarshal/images/firechip/spec17-intrate-test-500-500.perlbench_r/spec17-intrate-test-500-500.perlbench_r.img",
+			"outputs": [
+				"/output"
+			]
+		}
+	]
+}

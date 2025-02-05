@@ -1,0 +1,97 @@
+{
+	"benchmark_name": "spec17-intspeed",
+	"common_simulation_outputs": [
+		"uartlog"
+	],
+	"post_run_hook": "../../../spec-cpu2017/spec2017-workload/handle-results.py -d train -s intspeed",
+	"workloads": [
+		{
+			"name": "spec17-intspeed-623.xalancbmk_s",
+			"bootbinary": "../../../target-design/chipyard/software/firemarshal/images/firechip/spec17-intspeed-623.xalancbmk_s/spec17-intspeed-623.xalancbmk_s-bin",
+			"rootfs": "../../../target-design/chipyard/software/firemarshal/images/firechip/spec17-intspeed-623.xalancbmk_s/spec17-intspeed-623.xalancbmk_s.img",
+			"outputs": [
+				"/output"
+			]
+		},
+		{
+			"name": "spec17-intspeed-600.perlbench_s",
+			"bootbinary": "../../../target-design/chipyard/software/firemarshal/images/firechip/spec17-intspeed-600.perlbench_s/spec17-intspeed-600.perlbench_s-bin",
+			"rootfs": "../../../target-design/chipyard/software/firemarshal/images/firechip/spec17-intspeed-600.perlbench_s/spec17-intspeed-600.perlbench_s.img",
+			"outputs": [
+				"/output"
+			]
+		},
+		{
+			"name": "spec17-intspeed-602.gcc_s",
+			"bootbinary": "../../../target-design/chipyard/software/firemarshal/images/firechip/spec17-intspeed-602.gcc_s/spec17-intspeed-602.gcc_s-bin",
+			"rootfs": "../../../target-design/chipyard/software/firemarshal/images/firechip/spec17-intspeed-602.gcc_s/spec17-intspeed-602.gcc_s.img",
+			"outputs": [
+				"/output"
+			]
+		},
+		{
+			"name": "spec17-intspeed-605.mcf_s",
+			"bootbinary": "../../../target-design/chipyard/software/firemarshal/images/firechip/spec17-intspeed-605.mcf_s/spec17-intspeed-605.mcf_s-bin",
+			"rootfs": "../../../target-design/chipyard/software/firemarshal/images/firechip/spec17-intspeed-605.mcf_s/spec17-intspeed-605.mcf_s.img",
+			"outputs": [
+				"/output"
+			]
+		},
+		{
+			"name": "spec17-intspeed-620.omnetpp_s",
+			"bootbinary": "../../../target-design/chipyard/software/firemarshal/images/firechip/spec17-intspeed-620.omnetpp_s/spec17-intspeed-620.omnetpp_s-bin",
+			"rootfs": "../../../target-design/chipyard/software/firemarshal/images/firechip/spec17-intspeed-620.omnetpp_s/spec17-intspeed-620.omnetpp_s.img",
+			"outputs": [
+				"/output"
+			]
+		},
+		{
+			"name": "spec17-intspeed-625.x264_s",
+			"bootbinary": "../../../target-design/chipyard/software/firemarshal/images/firechip/spec17-intspeed-625.x264_s/spec17-intspeed-625.x264_s-bin",
+			"rootfs": "../../../target-design/chipyard/software/firemarshal/images/firechip/spec17-intspeed-625.x264_s/spec17-intspeed-625.x264_s.img",
+			"outputs": [
+				"/output"
+			]
+		},
+		{
+			"name": "spec17-intspeed-631.deepsjeng_s",
+			"bootbinary": "../../../target-design/chipyard/software/firemarshal/images/firechip/spec17-intspeed-631.deepsjeng_s/spec17-intspeed-631.deepsjeng_s-bin",
+			"rootfs": "../../../target-design/chipyard/software/firemarshal/images/firechip/spec17-intspeed-631.deepsjeng_s/spec17-intspeed-631.deepsjeng_s.img",
+			"outputs": [
+				"/output"
+			]
+		},
+		{
+			"name": "spec17-intspeed-641.leela_s",
+			"bootbinary": "../../../target-design/chipyard/software/firemarshal/images/firechip/spec17-intspeed-641.leela_s/spec17-intspeed-641.leela_s-bin",
+			"rootfs": "../../../target-design/chipyard/software/firemarshal/images/firechip/spec17-intspeed-641.leela_s/spec17-intspeed-641.leela_s.img",
+			"outputs": [
+				"/output"
+			]
+		},
+		{
+			"name": "spec17-intspeed-648.exchange2_s",
+			"bootbinary": "../../../target-design/chipyard/software/firemarshal/images/firechip/spec17-intspeed-648.exchange2_s/spec17-intspeed-648.exchange2_s-bin",
+			"rootfs": "../../../target-design/chipyard/software/firemarshal/images/firechip/spec17-intspeed-648.exchange2_s/spec17-intspeed-648.exchange2_s.img",
+			"outputs": [
+				"/output"
+			]
+		},
+		{
+			"name": "spec17-intspeed-657.xz_s-cpu2006docs",
+			"bootbinary": "../../../target-design/chipyard/software/firemarshal/images/firechip/spec17-intspeed-657.xz_s-cpu2006docs/spec17-intspeed-657.xz_s-cpu2006docs-bin",
+			"rootfs": "../../../target-design/chipyard/software/firemarshal/images/firechip/spec17-intspeed-657.xz_s-cpu2006docs/spec17-intspeed-657.xz_s-cpu2006docs.img",
+			"outputs": [
+				"/output"
+			]
+		},
+		{
+			"name": "spec17-intspeed-657.xz_s-cld",
+			"bootbinary": "../../../target-design/chipyard/software/firemarshal/images/firechip/spec17-intspeed-657.xz_s-cld/spec17-intspeed-657.xz_s-cld-bin",
+			"rootfs": "../../../target-design/chipyard/software/firemarshal/images/firechip/spec17-intspeed-657.xz_s-cld/spec17-intspeed-657.xz_s-cld.img",
+			"outputs": [
+				"/output"
+			]
+		}
+	]
+}

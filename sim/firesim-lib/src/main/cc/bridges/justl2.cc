@@ -1,9 +1,13 @@
 // See LICENSE for license details
 #include <string.h>
-
+#include <inttypes.h>
+#include <iostream>
+#include "replacement_algorithms/Hawkeye/hawkeye_algorithm.h"
 #include "justl2.h"
 #include "core/simif.h"
-
+#include "replacement_algorithms/Hawkeye/optgen.h"
+#include "replacement_algorithms/LRU/lru.h"
+#include <set>
 #include <fcntl.h>
 #include <sys/stat.h>
 
@@ -14,8 +18,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+// std::ofstream output("output.txt", std::ios::out);
+
+
 #ifndef _WIN32
 #include <unistd.h>
+
+//SM
+#define USE_Hawkeye 0
+#define USE_LRU 1
+#define USE_Random 0
+
+
+int start = 1;
 
 char justl2_t::KIND;
 
@@ -194,50 +209,251 @@ justl2_t::justl2_t(simif_t &simif,
 
 justl2_t::~justl2_t() = default;
 
+
+uint64_t justl2_t::read_register(uint32_t addr) {
+    volatile uint32_t value = read(addr);  // Force read from hardware
+    return value;
+}
+
+
 void justl2_t::send() {
   if (data.in.fire()) {
     write(mmio_addrs.in_bits, data.in.bits);
     write(mmio_addrs.in_valid, data.in.valid);
   }
 
+
+
   if (data.out.fire()){
     write(mmio_addrs.out_ready, data.out.ready);
   }
+
+// write(mmio_addrs.out_ready, true);
 }
 
-int justl2_t::read_l2_accesses(){
-  return read(mmio_addrs.l2_accesses);
+uint64_t justl2_t::read_l2_accesses_low() {
+  return read(mmio_addrs.l2_accesses_low);
 }
 
-int justl2_t::read_l2_misses(){
-  return read(mmio_addrs.l2_misses);
+uint64_t justl2_t::read_l2_accesses_high() {
+  return read(mmio_addrs.l2_accesses_high);
 }
+
+uint64_t justl2_t::read_l2_misses_low() {
+  return read(mmio_addrs.l2_misses_low);
+}
+
+uint64_t justl2_t::read_l2_misses_high() {
+  return read(mmio_addrs.l2_misses_high);
+}
+
+
+uint64_t justl2_t::read_l2_accesses_load() {
+    return read(mmio_addrs.l2_accesses_load);
+}
+
+uint64_t justl2_t::read_l2_accesses_writeback() {
+    return read(mmio_addrs.l2_accesses_writeback);
+}
+
+uint64_t justl2_t::read_l2_misses_load() {
+    return read(mmio_addrs.l2_misses_load);
+}
+
+uint64_t justl2_t::read_l2_misses_writeback() {
+    return read(mmio_addrs.l2_misses_writeback);
+}
+
+uint64_t justl2_t::read_optgen_accesses() {
+    return read(mmio_addrs.optgen_accesses);
+}
+
+uint64_t justl2_t::read_optgen_hit() {
+    return read(mmio_addrs.optgen_hit);
+}
+
+
+
 
 void justl2_t::recv() {
-  data.in.ready = read(mmio_addrs.in_ready);
-  data.out.valid = read(mmio_addrs.out_valid);
-  if (data.out.valid){
-    data.out.bits = read(mmio_addrs.out_bits);
-    printf("\n[JUSTL2 driver] Receiving from HW: Hit = %X (%s)\n", data.out.bits, justl2_ptyname);
-    
-    if (data.out.bits == 0){ // miss
-      // generate a three bit random number from 0 to 7
-      data.in.bits = (rand() % 8);
-      printf("\n[JUSTL2 driver] Sending victim way: %d (%s)\n", data.in.bits, justl2_ptyname);
-      data.in.valid = true;
-    }else if (data.out.bits > 1){ // print delay
-      // generate a three bit random number from 0 to 7
-      printf("\n[JUSTL2 driver] Printing stalling time: %d (%s)\n", data.out.bits, justl2_ptyname);
-      data.in.valid = true;
-    }  
-    
-  }
+    static int stage = 0;
+    static uint64_t address = 0;
+    static uint64_t pc = 0;
+    static uint32_t set = 0;
+    static uint32_t hit = 0;
+    static uint32_t way = 0;
+
+    // data.out.ready = true;
+    data.in.ready = read(mmio_addrs.in_ready);
+    data.out.valid = read(mmio_addrs.out_valid);
+
+    if (data.out.valid && data.out.ready) {
+        uint32_t value = read(mmio_addrs.out_bits);
+        switch (stage) {
+            case 0: // Address High
+                // InitReplacementState();
+                address = static_cast<uint64_t>(value) << 32;
+                // printf("CPU: Read Address High: 0x%08" PRIx32 "\n", value);
+                stage++;
+                break;
+            case 1: // Address Low
+                address |= static_cast<uint64_t>(value);
+                // printf("CPU: Read Address Low: 0x%08" PRIx32 "\n", value);
+                // printf("CPU: Read Address: 0x%016" PRIx64 "\n", address);
+                stage++;
+                break;
+            case 2: // PC High
+                pc = static_cast<uint64_t>(value) << 32;
+                // printf("CPU: Read PC High: 0x%08" PRIx32 "\n", value);
+                stage++;
+                break;
+            case 3: // PC Low
+                pc |= static_cast<uint64_t>(value);
+                // printf("CPU: Read PC Low: 0x%08" PRIx32 "\n", value);
+                // printf("CPU: Read PC: 0x%016" PRIx64 "\n", pc);
+                stage++;
+                break;
+            case 4: // Set
+                set = value;
+                // printf("CPU: Read Set: %d\n", set);
+                stage++;
+                break;
+            case 5: // Hit
+                hit = value;
+                // printf("CPU: Read Hit: %d\n", hit);
+                stage++;
+                break;
+            case 6: // Way
+                way = value;
+                // printf("CPU: Read Way: %d\n", hit);
+                // Process data
+
+
+            // // Map to track frequency of hashed PCs
+            // std::map<uint64_t, std::set<uint64_t>> hashMap;
+            // uint64_t hashedPC = CRC(pc) % 1024;
+            // // Increment frequency for the hashed index
+            // // hashFrequency[hashedPC]++;
+            // hashMap[hashedPC].insert(pc);
+            // int totalCollisions = 0;
+            // // Output the frequency data
+            // cout << "Hashed Index Frequency (Number of Unique PCs):" << std::endl;
+            // for (const auto& entry : hashMap) {
+            //     cout<< "Index: " << entry.first 
+            //             << ", Unique PCs: " << entry.second.size() << std::endl;
+            // }
+
+            // // Statistics about collisions
+            // for (const auto& entry : hashMap) {
+            //     if (entry.second.size() > 1) {
+            //         totalCollisions++;
+            //     }
+            // }
+
+            // cout << "\nTotal Hashed Indices: " << hashMap.size() << std::endl;
+            // cout << "Indices with Collisions: " << totalCollisions << std::endl;
+            // cout << "Percentage of Indices with Collisions: " 
+            // << (totalCollisions * 100.0 / hashMap.size()) << "%" << std::endl;
+
+
+
+            /// Hawkeye Replacement
+            #if USE_Hawkeye
+                // Victim-Hawkeye Replacement
+                if (hit == 0) {
+                
+                    if (pc != 0) {
+                        data.in.bits = GetVictimInSet(0, set, 0, pc, address, 0);
+                        UpdateReplacementState(0, set, data.in.bits, address, pc, 0, 0, hit);
+                      //   printf("Miss in Address: 0x%016" PRIx64 ", PC: 0x%016" PRIx64 ", Set: %d, Hit: %d, type:%d, Way: %d\n",
+                      // address, pc, set, hit, 0, data.in.bits);
+                    } else if (pc == 0){
+                        data.in.bits = GetVictimInSet(0, set, 0, pc, address, 3);
+                        UpdateReplacementState(0, set, data.in.bits, address, pc, 0, 3, hit);
+                      //   printf("Miss in Address: 0x%016" PRIx64 ", PC: 0x%016" PRIx64 ", Set: %d, Hit: %d, type:%d, Way: %d\n",
+                      // address, pc, set, hit, 3, data.in.bits);
+                    }
+
+                  //  cout << "0x" << address << " -> VictimWay: " << data.in.bits << ", set: " << set << std::endl;
+
+                  //  printf("0x: %d -> VictimWay: %d , Set: %d \n",address, data.in.bits, set);
+                  // output << "0x" << address 
+                  //   << " -> VictimWay: " << static_cast<int>(data.in.bits)
+                  //   << ", set: " << set << std::endl;
+
+
+                } else if (hit == 1) {
+                    data.in.bits = 9;
+                    if (pc != 0) {
+                      UpdateReplacementState(0, set, way, address, pc, 0, 0, hit);
+                    //     printf("Hit in Address: 0x%016" PRIx64 ", PC: 0x%016" PRIx64 ", Set: %d, Hit: %d, type:%d, Way: %d\n",
+                    // address, pc, set, hit, 0, way);
+
+                    } else if ( pc == 0){
+                      UpdateReplacementState(0, set, way, address, pc, 0, 3, hit);
+                    //   printf("Hit in Address: 0x%016" PRIx64 ", PC: 0x%016" PRIx64 ", Set: %d, Hit: %d, type:%d, Way: %d\n",
+                    // address, pc, set, hit, 3, way);
+                    }
+
+
+                }
+
+                PrintStats_Heartbeat();
+                PrintStats();
+
+            #elif USE_LRU
+                // Victim-LRU Policy
+                if (hit == 0) {
+                    data.in.bits = LRUGetVictimInSet(0, set, 0, pc, address, 0);
+                    LRUUpdateReplacementState(0, set, data.in.bits, address, pc, 0, 0, hit);
+                } else if (hit == 1) {
+                    data.in.bits = 9;
+                    LRUUpdateReplacementState(0, set, way, address, pc, 0, 0, hit);
+                }
+
+            #elif USE_Random
+                // Victim-Random Policy
+                if (!hit) {
+                    data.in.bits = rand() % 8; // Random victim way
+                } else {
+                    data.in.bits = 9;
+                }
+
+            
+            // output << "0x" << address 
+            //   << " -> VictimWay: " << static_cast<int>(data.in.bits)
+            //   << ", set: " << set << std::endl;
+
+            #else
+                #error "No replacement policy selected!"
+            #endif
+
+                
+
+                data.in.valid = true;
+                // printf("[JUSTL2 driver] Received Data:\n");
+                stage = 0; // Reset stage for next transaction
+                break;
+        }
+    } else {
+        data.in.valid = false;
+    }
 }
 
 void justl2_t::tick() {
+
   data.out.ready = true;
   data.in.valid = false;
-  
+  if (start == 1) 
+    {
+    InitReplacementState();
+    LRUInitReplacementState();
+    start = 0;
+    } 
+  // if (start == 0){
+  //   PrintStats();
+  // }
+
   do {
     this->recv();
     
@@ -251,5 +467,9 @@ void justl2_t::tick() {
 
     this->send();
     data.in.valid = false;
+
   } while (data.out.fire());
+
+
 }
+

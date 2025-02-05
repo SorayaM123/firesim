@@ -1,0 +1,4 @@
+This workload was generated using FireMarshal. See the following config
+and workload directory for details:
+../../../spec-cpu2017/spec2017-workload/marshal-configs/spec17-intspeed-test.json
+../../../spec-cpu2017/spec2017-workload

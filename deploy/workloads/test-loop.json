@@ -1,0 +1,8 @@
+// {
+// "benchmark_name": "test-loop",
+// "common_simulation_outputs": [
+// "looplog"
+// ],
+// "common_bootbinary": "../../../target-design/chipyard/software/test/test-loop",
+// "common_rootfs": "../../../target-design/chipyard/software/firemarshal/boards/default/installers/firesim/dummy.rootfs"
+// }

@@ -16,8 +16,8 @@ class LatencyPipeMMRegIO(cfg: BaseConfig)(implicit p: Parameters) extends SplitT
   val writeLatency = Input(UInt(32.W))
 
   val registers = maxReqRegisters ++ Seq(
-    (writeLatency -> RuntimeSetting(30, "Write latency", min = 1)),
-    (readLatency  -> RuntimeSetting(30,"Read latency", min = 1))
+    (writeLatency -> RuntimeSetting(100, "Write latency", min = 1)),
+    (readLatency  -> RuntimeSetting(100,"Read latency", min = 1))
   )
 
   def requestSettings(): Unit = {
